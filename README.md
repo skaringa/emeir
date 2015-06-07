@@ -9,3 +9,7 @@ The software consists of two parts:
 * Data acquisition part running on an Arduino Nano. It controls the infrared light barrier, detects trigger levels and communicates with a master computer over USB serial.
 * Data recording part running on a the master computer (Raspberry Pi). It retrieves the data from the Arduino over USB serial and stores counter and consumption values into a round robin database.
 
+Schematics
+==========
+
+![Schematics](http://www.kompf.de/tech/images/reflsensor.png)
