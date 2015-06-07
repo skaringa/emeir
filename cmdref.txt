@@ -1,0 +1,9 @@
+Commands from host (Raspi) to Arduino
+
+D - retrieve and print raw data
+T - enter trigger mode and print trigger data (0/1)
+S <low> <high> - Ser trigger levels (85/90)
+C - Cancel data acquisition and enter command mode
+
+Arduino is in trigger mode upon start
+Send 'C' to enter command mode
