@@ -26,7 +26,6 @@
 const int analogInPin = A7;  // Analog input pin that the photo transistor is attached to
 const int irOutPin = 2; // Digital output pin that the IR-LED is attached to
 const int ledOutPin = 12; // Signal LED output pin
-const int triggerOutPin = 8; // Trigger output pin
 
 int sensorValueOff = 0;  // value read from the photo transistor when ir LED is off
 int sensorValueOn = 0;  // value read from the photo transistor when ir LED is on
@@ -44,6 +43,7 @@ char mode = 'D';
 // Data output mode:
 // R - raw data
 // T - trigger events
+// C - counter
 char dataOutput = 'T';
 
 // trigger state and level
@@ -110,8 +110,6 @@ void detectTrigger(int val) {
     Serial.println(triggerState? 1 : 0);
     // control internal LED
     digitalWrite(ledOutPin, triggerState);
-    // control trigger output pin
-    digitalWrite(triggerOutPin, triggerState);
   }
 }
 
@@ -174,7 +172,6 @@ void setup() {
   // initialize the digital pins as an output.
   pinMode(irOutPin, OUTPUT);
   pinMode(ledOutPin, OUTPUT);
-  pinMode(triggerOutPin, OUTPUT);
   // read config from EEPROM
   readTriggerLevels();
 }
