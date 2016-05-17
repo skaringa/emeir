@@ -1,0 +1,6 @@
+*~
+*.bak
+*.rrd
+nohup.out
+*.gif
+minicom.cap
