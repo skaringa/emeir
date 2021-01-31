@@ -29,6 +29,7 @@ import os
 import re
 import argparse
 import rrdtool
+import requests
 
 # Serial port of arduino
 port = '/dev/ttyUSB0'
@@ -80,6 +81,19 @@ def last_rrd_count():
   handle.close()
   return val
 
+# Post data to my openHAB server
+def post_oh(item, value): 
+  try:
+    headers = { 'Content-Type': 'text/plain' }
+    with open(os.path.expanduser('~/.ohkey'), 'r') as f:
+      cred = f.readline().strip()
+    r = requests.put("http://fifi:8080/rest/items/{}/state".format(item),
+        data=str(value), auth=requests.auth.HTTPBasicAuth(cred, ''), 
+        headers=headers, timeout=0.5)
+    r.raise_for_status()
+  except Exception as e:
+    print "post_ths failed: %s" % e.message
+
 # Main
 def main():
   # Check command args
@@ -114,9 +128,12 @@ def main():
     if old_state == 1 and trigger_state == 0:
       # trigger active -> update count rrd
       counter += trigger_step
-      update = "N:%.2f:%.0f" % (counter, trigger_step*3600000.0)
+      consum = trigger_step*3600000.0
+      update = "N:%.2f:%.0f" % (counter, consum)
       #print update
       rrdtool.update(count_rrd, update)
+      post_oh("emeir_counter", counter)
+      post_oh("emeir_consum", consum)
 
 
 if __name__ == '__main__':
