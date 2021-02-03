@@ -133,7 +133,6 @@ def main():
       #print update
       rrdtool.update(count_rrd, update)
       post_oh("emeir_counter", counter)
-      post_oh("emeir_consum", consum)
 
 
 if __name__ == '__main__':
