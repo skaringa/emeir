@@ -81,18 +81,25 @@ def last_rrd_count():
   handle.close()
   return val
 
-# Post data to my openHAB server
-def post_oh(item, value): 
+# Post data to mqtt broker
+def post_mqtt(counter, consum): 
   try:
-    headers = { 'Content-Type': 'text/plain' }
-    with open(os.path.expanduser('~/.ohkey'), 'r') as f:
-      cred = f.readline().strip()
-    r = requests.put("http://fifi:8080/rest/items/{}/state".format(item),
-        data=str(value), auth=requests.auth.HTTPBasicAuth(cred, ''), 
-        headers=headers, timeout=0.5)
-    r.raise_for_status()
+    import paho.mqtt.publish as publish
+
+    msgs = [
+      {
+        'topic': 'meter/electricity/counter',
+        'payload': counter
+      },
+      {
+        'topic': 'meter/electricity/consum',
+        'payload': consum
+      }
+    ]
+    publish.multiple(msgs, hostname="homegearpi", 
+        client_id="meter", keepalive=2)
   except Exception as e:
-    print "post_ths failed: %s" % e.message
+    print "post_mqtt failed: %s" % e.message
 
 # Main
 def main():
@@ -132,7 +139,7 @@ def main():
       update = "N:%.2f:%.0f" % (counter, consum)
       #print update
       rrdtool.update(count_rrd, update)
-      post_oh("emeir_counter", counter)
+      post_mqtt(counter, trigger_step)
 
 
 if __name__ == '__main__':
