@@ -29,7 +29,7 @@ import os
 import re
 import argparse
 import rrdtool
-import requests
+import paho.mqtt.client as mqtt
 
 # Serial port of arduino
 port = '/dev/ttyUSB0'
@@ -40,7 +40,8 @@ rev_per_kWh = 75
 # Path to RRD with counter values
 count_rrd = "%s/emeir.rrd" % (os.path.dirname(os.path.abspath(__file__)))
 
-
+# MQTT client
+mqttc = mqtt.Client(client_id="emeir.py")
 
 # Create the Round Robin Database
 def create_rrd():
@@ -82,24 +83,9 @@ def last_rrd_count():
   return val
 
 # Post data to mqtt broker
-def post_mqtt(counter, consum): 
-  try:
-    import paho.mqtt.publish as publish
-
-    msgs = [
-      {
-        'topic': 'meter/electricity/counter',
-        'payload': counter
-      },
-      {
-        'topic': 'meter/electricity/consum',
-        'payload': consum
-      }
-    ]
-    publish.multiple(msgs, hostname="homegearpi", 
-        client_id="meter", keepalive=2)
-  except Exception as e:
-    print "post_mqtt failed: %s" % e.message
+def post_mqtt(counter, consum):
+  mqttc.publish('meter/electricity/counter', counter)
+  mqttc.publish('meter/electricity/consum', consum)
 
 # Main
 def main():
@@ -116,6 +102,10 @@ def main():
   if not ser.isOpen():
     print "Unable to open serial port %s" % port
     sys.exit(1)
+
+  # Connect to mqtt broker
+  mqttc.connect("homegearpi") 
+  mqttc.loop_start()
 
   trigger_state = 0
   counter = last_rrd_count()
