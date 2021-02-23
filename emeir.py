@@ -104,8 +104,11 @@ def main():
     sys.exit(1)
 
   # Connect to mqtt broker
-  mqttc.connect("homegearpi") 
-  mqttc.loop_start()
+  try:
+    mqttc.connect("homegearpi")
+    mqttc.loop_start()
+  except Exception:
+    print("failed to connect to mqtt broker")
 
   trigger_state = 0
   counter = last_rrd_count()
