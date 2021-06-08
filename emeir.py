@@ -42,6 +42,7 @@ count_rrd = "%s/emeir.rrd" % (os.path.dirname(os.path.abspath(__file__)))
 
 # MQTT client
 mqttc = mqtt.Client(client_id="emeir.py")
+mqtt_is_connected = False
 
 # Create the Round Robin Database
 def create_rrd():
@@ -82,6 +83,19 @@ def last_rrd_count():
   handle.close()
   return val
 
+# Connect to mqtt broker
+def connect_mqtt():
+  global mqtt_is_connected
+  if mqtt_is_connected:
+    return
+  try:
+    mqttc.connect("fifi")
+    mqttc.loop_start()
+    mqtt_is_connected = True
+    print("connected to mqtt broker")
+  except Exception:
+    print("failed to connect to mqtt broker")
+
 # Post data to mqtt broker
 def post_mqtt(counter, consum):
   mqttc.publish('meter/electricity/counter', counter)
@@ -102,13 +116,6 @@ def main():
   if not ser.isOpen():
     print "Unable to open serial port %s" % port
     sys.exit(1)
-
-  # Connect to mqtt broker
-  try:
-    mqttc.connect("homegearpi")
-    mqttc.loop_start()
-  except Exception:
-    print("failed to connect to mqtt broker")
 
   trigger_state = 0
   counter = last_rrd_count()
@@ -132,6 +139,8 @@ def main():
       update = "N:%.2f:%.0f" % (counter, consum)
       #print update
       rrdtool.update(count_rrd, update)
+      # (Re-)connect and publish to mqtt
+      connect_mqtt()
       post_mqtt(counter, trigger_step)
 
 
